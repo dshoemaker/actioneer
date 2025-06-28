@@ -1,0 +1,51 @@
+<!-- Hero Section -->
+<div class="relative overflow-hidden bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+  <div class="absolute inset-0">
+    <div class="absolute inset-0 bg-gradient-to-br from-purple-100/20 via-pink-100/20 to-orange-100/20"></div>
+    <div class="absolute top-0 left-1/4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+    <div class="absolute top-0 right-1/4 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+  </div>
+  
+  <div class="relative px-4 py-12 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-2xl text-center">
+      <!-- Back Button -->
+      <div class="mb-6">
+        <.link navigate={~p"/events/#{@event}"}
+          class="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium">
+          ← Back to Event
+        </.link>
+      </div>
+      
+      <h1 class="text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 bg-clip-text text-transparent sm:text-5xl mb-4">
+        Edit Event
+      </h1>
+      <p class="text-lg text-gray-600 max-w-xl mx-auto">
+        Update your event details to keep participants informed
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Form Section -->
+<div class="bg-white py-16">
+  <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+    <div class="bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-2xl shadow-xl p-8">
+      <.event_form changeset={@changeset} action={~p"/events/#{@event}"} />
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
+  }
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+</style>

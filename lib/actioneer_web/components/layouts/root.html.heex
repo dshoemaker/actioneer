@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" class="[scrollbar-gutter:stable]">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content={get_csrf_token()} />
+    <.live_title default="Actioneer">
+      {assigns[:page_title]}
+    </.live_title>
+    <link phx-track-static rel="stylesheet" href={~p"/assets/app.css"} />
+    <script defer phx-track-static type="text/javascript" src={~p"/assets/app.js"}>
+    </script>
+  </head>
+  <body class="bg-white">
+    <!-- Navigation Bar -->
+    <nav class="relative z-50 bg-white/90 backdrop-blur-sm border-b border-gray-200">
+      <div class="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12 xl:px-16">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center">
+            <.link navigate="/" class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl flex items-center justify-center">
+                <span class="text-white font-bold text-xl">A</span>
+              </div>
+              <span class="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-orange-500 bg-clip-text text-transparent">
+                Actioneer
+              </span>
+            </.link>
+          </div>
+          
+          <!-- Navigation Links -->
+          <div class="hidden md:flex items-center gap-8">
+            <.link navigate="/events" class="text-gray-700 hover:text-purple-600 font-medium transition-colors">
+              Events
+            </.link>
+            <%= if assigns[:current_user] && assigns.current_user.role in [:creator, :both] do %>
+              <.link navigate="/events/new" class="text-gray-700 hover:text-purple-600 font-medium transition-colors">
+                Create Event
+              </.link>
+            <% end %>
+          </div>
+          
+          <!-- User Menu -->
+          <div class="flex items-center gap-4">
+            <%= if @current_user do %>
+              <div class="hidden md:flex items-center gap-4">
+                <span class="text-sm text-gray-600">Hello, <span class="font-semibold text-gray-900"><%= @current_user.name || @current_user.email %></span></span>
+                <.link
+                  href={~p"/users/settings"}
+                  class="text-sm font-medium text-gray-700 hover:text-purple-600 transition-colors"
+                >
+                  Settings
+                </.link>
+                <.link
+                  href={~p"/users/log_out"}
+                  method="delete"
+                  class="inline-flex items-center gap-2 rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                >
+                  Log out
+                </.link>
+              </div>
+            <% else %>
+              <div class="flex items-center gap-3">
+                <.link
+                  href={~p"/users/log_in"}
+                  class="text-sm font-medium text-gray-700 hover:text-purple-600 transition-colors"
+                >
+                  Log in
+                </.link>
+                <.link
+                  href={~p"/users/register"}
+                  class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-2 text-sm font-semibold text-white hover:from-purple-700 hover:to-pink-600 transition-all duration-200"
+                >
+                  Sign up
+                </.link>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </nav>
+    
+    {@inner_content}
+  </body>
+</html>

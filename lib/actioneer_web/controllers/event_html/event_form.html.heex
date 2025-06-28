@@ -1,0 +1,152 @@
+<.simple_form :let={f} for={@changeset} action={@action} id="event-form">
+  <.error :if={@changeset.action}>
+    Oops, something went wrong! Please check the errors below.
+  </.error>
+  
+  <.input field={f[:title]} type="text" label="Event Title" required />
+  
+  <.input field={f[:description]} type="textarea" label="Description" 
+    placeholder="Describe your event, what participants can expect, and any requirements..." 
+    required />
+  
+  <div class="space-y-4">
+    <label class="block text-sm font-semibold leading-6 text-zinc-800">
+      📍 Event Location
+    </label>
+    
+    <div class="flex gap-3 items-center mb-3">
+      <button type="button" id="get-location-btn" 
+        class="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600">
+        📍 Use My Location
+      </button>
+      <span id="location-status" class="text-sm text-gray-600"></span>
+    </div>
+    
+    <.input field={f[:address]} type="text" label="Address" 
+      placeholder="Enter address or use 'Use My Location' button above" />
+    
+    <div class="grid grid-cols-2 gap-4">
+      <.input field={f[:latitude]} type="number" label="Latitude" step="any" readonly />
+      <.input field={f[:longitude]} type="number" label="Longitude" step="any" readonly />
+    </div>
+  </div>
+  
+  <.input field={f[:date_time]} type="datetime-local" label="Date & Time" required />
+  
+  <.input field={f[:category]} type="select" label="Category" options={[
+    {"Environment", "environment"},
+    {"Culture", "culture"}, 
+    {"Voting", "voting"},
+    {"Community", "community"},
+    {"Other", "other"}
+  ]} required />
+  
+  <.input field={f[:max_participants]} type="number" label="Maximum Participants" 
+    placeholder="Leave empty for unlimited participants" />
+  
+  <.input field={f[:status]} type="select" label="Status" options={[
+    {"Draft", "draft"},
+    {"Published", "published"}
+  ]} />
+  
+  <:actions>
+    <.button class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600">
+      🚀 Create Event
+    </.button>
+  </:actions>
+</.simple_form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const getLocationBtn = document.getElementById('get-location-btn');
+  const locationStatus = document.getElementById('location-status');
+  const addressInput = document.querySelector('input[name="event[address]"]');
+  const latInput = document.querySelector('input[name="event[latitude]"]');
+  const lngInput = document.querySelector('input[name="event[longitude]"]');
+
+  function updateLocationStatus(message, isError = false) {
+    locationStatus.textContent = message;
+    locationStatus.className = `text-sm ${isError ? 'text-red-600' : 'text-green-600'}`;
+  }
+
+  function reverseGeocode(lat, lng) {
+    // Using a simple reverse geocoding service (you might want to use a more robust solution)
+    fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.locality || data.city) {
+          const address = [
+            data.locality || data.city,
+            data.principalSubdivision,
+            data.countryName
+          ].filter(Boolean).join(', ');
+          
+          addressInput.value = address;
+          updateLocationStatus('✅ Location detected and address found!');
+        } else {
+          updateLocationStatus('📍 Location detected (address lookup failed)');
+        }
+      })
+      .catch(() => {
+        updateLocationStatus('📍 Location detected (address lookup failed)');
+      });
+  }
+
+  getLocationBtn.addEventListener('click', function() {
+    if (!navigator.geolocation) {
+      updateLocationStatus('❌ Geolocation not supported by browser', true);
+      return;
+    }
+
+    updateLocationStatus('🔍 Getting your location...');
+    getLocationBtn.disabled = true;
+    getLocationBtn.textContent = '🔍 Locating...';
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+        
+        // Try to get a readable address
+        reverseGeocode(lat, lng);
+        
+        getLocationBtn.disabled = false;
+        getLocationBtn.innerHTML = '✅ Location Set';
+        
+        setTimeout(() => {
+          getLocationBtn.innerHTML = '📍 Use My Location';
+        }, 3000);
+      },
+      function(error) {
+        let errorMessage = '❌ ';
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage += 'Location access denied by user';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage += 'Location information unavailable';
+            break;
+          case error.TIMEOUT:
+            errorMessage += 'Location request timed out';
+            break;
+          default:
+            errorMessage += 'Unknown location error';
+            break;
+        }
+        
+        updateLocationStatus(errorMessage, true);
+        getLocationBtn.disabled = false;
+        getLocationBtn.textContent = '📍 Try Again';
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  });
+});
+</script>
